@@ -1,13 +1,14 @@
 [phases.setup]
-nixPkgs = ["python311", "nodejs_20"]
+nixPkgs = ["python311", "nodejs_20", "postgresql"]
+aptPkgs = ["libpq-dev"]
 
 [phases.frontend]
 dependsOn = ["setup"]
 cmds = ["cd frontend && npm install && npm run build"]
 
 [phases.install]
-dependsOn = ["setup"]
-cmds = ["cd backend && pip install -r requirements.txt"]
+dependsOn = ["setup", "frontend"]
+cmds = ["python3 -m pip install -r backend/requirements.txt"]
 
 [start]
-cmd = "cd backend && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
+cmd = "cd backend && python3 -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"

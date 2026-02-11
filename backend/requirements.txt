@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+authlib
+python-jose[cryptography]
+sqlalchemy
+psycopg2-binary
+itsdangerous
+httpx

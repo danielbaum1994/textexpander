@@ -259,7 +259,7 @@ export default function App() {
   return (
     <div className="container">
       <header>
-        <h1>Snippy Dashboard</h1>
+        <div><h1>Snippy Dashboard</h1><p className="subheader">A Daniel Baum creation</p></div>
         <div className="header-right">
           <label className="toggle" title={paused ? "Expansion paused" : "Expansion active"}>
             <input type="checkbox" checked={!paused} onChange={togglePaused} />

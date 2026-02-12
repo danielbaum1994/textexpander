@@ -80,6 +80,13 @@ header {
 h1 {
   font-size: 24px;
   font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.subheader {
+  font-size: 13px;
+  color: #86868b;
+  font-weight: 400;
 }
 
 .header-right {

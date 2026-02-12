@@ -23,7 +23,7 @@ CACHE_PATH = CONFIG_DIR / "snippets.json"
 SYNC_INTERVAL = 30  # seconds
 
 # Set this to your deployed Railway URL (or override via env var)
-SERVER_URL = os.environ.get("TEXTEXPANDER_URL", "https://your-app.up.railway.app")
+SERVER_URL = os.environ.get("TEXTEXPANDER_URL", "https://textexpander-production.up.railway.app")
 
 RESET_KEYS = {keyboard.Key.space, keyboard.Key.enter, keyboard.Key.tab}
 MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
@@ -74,6 +74,21 @@ def sync_snippets(api_key: str) -> list[dict] | None:
             print(f"  Sync failed (HTTP {resp.status_code})")
     except requests.RequestException as e:
         print(f"  Sync error: {e}")
+    return None
+
+
+def check_paused(api_key: str) -> bool | None:
+    """Check if user has paused expansion. Returns None on failure."""
+    try:
+        resp = requests.get(
+            f"{SERVER_URL}/api/me",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            return resp.json().get("paused", False)
+    except requests.RequestException:
+        pass
     return None
 
 
@@ -238,8 +253,14 @@ def main():
     # Start expander
     expander = Expander()
     expander.set_snippets(snippets)
-    expander.start()
-    print("\nTextExpander is running. Press Ctrl+C to stop.\n")
+    is_paused = False
+    paused_status = check_paused(api_key)
+    if paused_status:
+        is_paused = True
+        print("\nTextExpander is paused (toggle on in the web dashboard).\n")
+    else:
+        expander.start()
+        print("\nTextExpander is running. Press Ctrl+C to stop.\n")
 
     # Background sync loop
     try:
@@ -248,6 +269,17 @@ def main():
             updated = sync_snippets(api_key)
             if updated is not None:
                 expander.set_snippets(updated)
+
+            paused_status = check_paused(api_key)
+            if paused_status is not None:
+                if paused_status and not is_paused:
+                    expander.stop()
+                    is_paused = True
+                    print("  Expansion paused.")
+                elif not paused_status and is_paused:
+                    expander.start()
+                    is_paused = False
+                    print("  Expansion resumed.")
     except KeyboardInterrupt:
         print("\nStopping...")
         expander.stop()

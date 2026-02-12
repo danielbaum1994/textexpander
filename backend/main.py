@@ -144,7 +144,14 @@ async def auth_device(request: Request):
 
 @app.get("/api/me")
 def get_me(user: User = Depends(get_current_user)):
-    return {"id": user.id, "email": user.email, "name": user.name}
+    return {"id": user.id, "email": user.email, "name": user.name, "paused": bool(user.paused)}
+
+
+@app.put("/api/me/paused")
+def set_paused(body: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user.paused = bool(body.get("paused", False))
+    db.commit()
+    return {"paused": bool(user.paused)}
 
 
 @app.get("/api/snippets")

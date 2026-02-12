@@ -79,6 +79,7 @@ export default function App() {
   const [token, setToken] = useState(getToken);
   const [user, setUser] = useState(getUser);
   const [snippets, setSnippets] = useState([]);
+  const [paused, setPaused] = useState(false);
   const [abbr, setAbbr] = useState("");
   const [expansion, setExpansion] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -98,8 +99,27 @@ export default function App() {
       .catch(console.error);
   };
 
+  const fetchMe = () => {
+    if (!token) return;
+    fetch("/api/me", { headers: authHeaders() })
+      .then((r) => r.json())
+      .then((data) => setPaused(!!data.paused))
+      .catch(console.error);
+  };
+
+  const togglePaused = async () => {
+    const newPaused = !paused;
+    setPaused(newPaused);
+    await fetch("/api/me/paused", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ paused: newPaused }),
+    });
+  };
+
   useEffect(() => {
     fetchSnippets();
+    fetchMe();
   }, [token]);
 
   const handleSignOut = () => {
@@ -239,6 +259,11 @@ export default function App() {
       <header>
         <h1>TextExpander Dashboard</h1>
         <div className="header-right">
+          <label className="toggle" title={paused ? "Expansion paused" : "Expansion active"}>
+            <input type="checkbox" checked={!paused} onChange={togglePaused} />
+            <span className="toggle-slider" />
+            <span className="toggle-label">{paused ? "Off" : "On"}</span>
+          </label>
           <span className="user-name">{user?.name}</span>
           <button className="sign-out" onClick={handleSignOut}>Sign out</button>
         </div>

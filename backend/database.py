@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, Text, create_engine, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text, create_engine, func, text
 from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
 
 
@@ -43,6 +43,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
     api_key = Column(String, unique=True, index=True)
+    paused = Column(Boolean, default=False, server_default="false")
     created_at = Column(DateTime, server_default=func.now())
 
     snippets = relationship("Snippet", back_populates="user", cascade="all, delete-orphan")
@@ -62,6 +63,13 @@ class Snippet(Base):
 
 def create_tables():
     Base.metadata.create_all(bind=engine)
+    # Migrate: add paused column if it doesn't exist
+    with engine.connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN paused BOOLEAN DEFAULT false"))
+            conn.commit()
+        except Exception:
+            conn.rollback()
 
 
 def get_db():

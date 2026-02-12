@@ -80,6 +80,8 @@ export default function App() {
   const [user, setUser] = useState(getUser);
   const [snippets, setSnippets] = useState([]);
   const [paused, setPaused] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [showSetup, setShowSetup] = useState(false);
   const [abbr, setAbbr] = useState("");
   const [expansion, setExpansion] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -103,7 +105,7 @@ export default function App() {
     if (!token) return;
     fetch("/api/me", { headers: authHeaders() })
       .then((r) => r.json())
-      .then((data) => setPaused(!!data.paused))
+      .then((data) => { setPaused(!!data.paused); setApiKey(data.api_key || ""); })
       .catch(console.error);
   };
 
@@ -264,10 +266,51 @@ export default function App() {
             <span className="toggle-slider" />
             <span className="toggle-label">{paused ? "Off" : "On"}</span>
           </label>
+          <button className="setup-btn" onClick={() => setShowSetup(!showSetup)}>Setup</button>
           <span className="user-name">{user?.name}</span>
           <button className="sign-out" onClick={handleSignOut}>Sign out</button>
         </div>
       </header>
+
+      {showSetup && (
+        <div className="setup-panel">
+          <h2>Setup Local Client</h2>
+          <p>Follow these steps in Terminal on your Mac:</p>
+          <div className="setup-steps">
+            <div className="setup-step">
+              <span className="step-num">1</span>
+              <div className="step-content">
+                <p>Install and run the client:</p>
+                <code className="setup-code" onClick={(e) => {navigator.clipboard.writeText(e.currentTarget.textContent)}}>
+                  {"pip3 install pynput requests && git clone https://github.com/danielbaum1994/textexpander.git ~/textexpander 2>/dev/null; python3 ~/textexpander/client/expander.py"}
+                </code>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">2</span>
+              <div className="step-content">
+                <p>A browser tab will open — sign in with Google, then copy your API key and paste it back in Terminal.</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">3</span>
+              <div className="step-content">
+                <p>To keep it running in the background (survives closing Terminal):</p>
+                <code className="setup-code" onClick={(e) => {navigator.clipboard.writeText("nohup python3 ~/textexpander/client/expander.py > ~/.textexpander/expander.log 2>&1 &")}}>
+                  {"nohup python3 ~/textexpander/client/expander.py > ~/.textexpander/expander.log 2>&1 &"}
+                </code>
+              </div>
+            </div>
+          </div>
+          <div className="setup-apikey">
+            <span>Your API key (click to copy):</span>
+            <code className="setup-code" onClick={() => {navigator.clipboard.writeText(apiKey)}}>
+              {apiKey}
+            </code>
+          </div>
+          <p className="setup-note">Click any code block to copy it to your clipboard.</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <input

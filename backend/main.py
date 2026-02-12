@@ -144,7 +144,7 @@ async def auth_device(request: Request):
 
 @app.get("/api/me")
 def get_me(user: User = Depends(get_current_user)):
-    return {"id": user.id, "email": user.email, "name": user.name, "paused": bool(user.paused)}
+    return {"id": user.id, "email": user.email, "name": user.name, "paused": bool(user.paused), "api_key": user.api_key}
 
 
 @app.put("/api/me/paused")

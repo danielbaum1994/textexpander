@@ -274,6 +274,20 @@ h1 {
   color: #86868b;
 }
 
+.setup-substeps {
+  margin: 8px 0 4px 4px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setup-substeps li {
+  font-size: 13px;
+  color: #1d1d1f;
+  line-height: 1.5;
+}
+
 kbd {
   display: inline-block;
   padding: 2px 6px;

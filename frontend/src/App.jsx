@@ -275,7 +275,7 @@ export default function App() {
       {showSetup && (
         <div className="setup-panel">
           <h2>Get Snippy on Your Mac</h2>
-          <p>Once set up, your snippets will auto-expand as you type anywhere on your Mac. Takes about 2 minutes.</p>
+          <p>Once set up, your snippets will auto-expand as you type anywhere on your Mac. Takes about 3 minutes.</p>
           <div className="setup-steps">
             <div className="setup-step">
               <span className="step-num">1</span>
@@ -301,17 +301,35 @@ export default function App() {
             <div className="setup-step">
               <span className="step-num">4</span>
               <div className="step-content">
-                <p><strong>Paste the key</strong> — go back to Terminal, paste the API key, and hit Enter. {"You'll"} see "TextExpander is running."</p>
+                <p><strong>Paste the key</strong> — go back to Terminal, paste the API key, and hit Enter. {"You'll"} see {"\""}Snippy is running.{"\""}</p>
               </div>
             </div>
             <div className="setup-step">
               <span className="step-num">5</span>
               <div className="step-content">
-                <p><strong>Allow keyboard access</strong> — macOS will ask you to allow Terminal in <em>System Settings &gt; Privacy &amp; Security &gt; Accessibility</em>. Click Allow.</p>
+                <p><strong>Allow keyboard access</strong> — this is the important part! macOS needs to trust Python to read your keystrokes.</p>
+                <ol className="setup-substeps">
+                  <li>Open <strong>System Settings</strong> {">"} <strong>Privacy & Security</strong> {">"} <strong>Accessibility</strong></li>
+                  <li>Click the <strong>+</strong> button (unlock with your password if needed)</li>
+                  <li>Press <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> to open the path bar, then paste this path:</li>
+                </ol>
+                <code className="setup-code" onClick={(e) => {navigator.clipboard.writeText(e.currentTarget.textContent)}}>
+                  {"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app"}
+                </code>
+                <ol className="setup-substeps" start={4}>
+                  <li>Click <strong>Open</strong> to add it</li>
+                  <li>Make sure its toggle is <strong>on</strong></li>
+                </ol>
               </div>
             </div>
             <div className="setup-step">
               <span className="step-num">6</span>
+              <div className="step-content">
+                <p><strong>Restart Snippy</strong> — go back to Terminal and run the command from Step 2 again. Your snippets should now expand!</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">7</span>
               <div className="step-content">
                 <p><strong>Keep it running</strong> — paste this final command so Snippy stays active even after you close Terminal:</p>
                 <code className="setup-code" onClick={() => {navigator.clipboard.writeText("nohup python3 ~/textexpander/client/expander.py > ~/.textexpander/expander.log 2>&1 &")}}>

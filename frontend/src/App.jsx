@@ -274,41 +274,54 @@ export default function App() {
 
       {showSetup && (
         <div className="setup-panel">
-          <h2>Setup Local Client</h2>
-          <p>Follow these steps in Terminal on your Mac:</p>
+          <h2>Get Snippy on Your Mac</h2>
+          <p>Once set up, your snippets will auto-expand as you type anywhere on your Mac. Takes about 2 minutes.</p>
           <div className="setup-steps">
             <div className="setup-step">
               <span className="step-num">1</span>
               <div className="step-content">
-                <p>Install and run the client:</p>
+                <p><strong>Open Terminal</strong> — press <kbd>Cmd</kbd> + <kbd>Space</kbd>, type <strong>Terminal</strong>, and hit Enter.</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">2</span>
+              <div className="step-content">
+                <p><strong>Paste this command</strong> — click the box below to copy it, then paste into Terminal with <kbd>Cmd</kbd> + <kbd>V</kbd> and hit Enter.</p>
                 <code className="setup-code" onClick={(e) => {navigator.clipboard.writeText(e.currentTarget.textContent)}}>
                   {"pip3 install pynput requests && git clone https://github.com/danielbaum1994/textexpander.git ~/textexpander 2>/dev/null; python3 ~/textexpander/client/expander.py"}
                 </code>
               </div>
             </div>
             <div className="setup-step">
-              <span className="step-num">2</span>
+              <span className="step-num">3</span>
               <div className="step-content">
-                <p>A browser tab will open — sign in with Google, then copy your API key and paste it back in Terminal.</p>
+                <p><strong>Sign in</strong> — a browser tab will open. Sign in with Google, and {"you'll"} see an API key. Copy it.</p>
               </div>
             </div>
             <div className="setup-step">
-              <span className="step-num">3</span>
+              <span className="step-num">4</span>
               <div className="step-content">
-                <p>To keep it running in the background (survives closing Terminal):</p>
-                <code className="setup-code" onClick={(e) => {navigator.clipboard.writeText("nohup python3 ~/textexpander/client/expander.py > ~/.textexpander/expander.log 2>&1 &")}}>
+                <p><strong>Paste the key</strong> — go back to Terminal, paste the API key, and hit Enter. {"You'll"} see "TextExpander is running."</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">5</span>
+              <div className="step-content">
+                <p><strong>Allow keyboard access</strong> — macOS will ask you to allow Terminal in <em>System Settings &gt; Privacy &amp; Security &gt; Accessibility</em>. Click Allow.</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">6</span>
+              <div className="step-content">
+                <p><strong>Keep it running</strong> — paste this final command so Snippy stays active even after you close Terminal:</p>
+                <code className="setup-code" onClick={() => {navigator.clipboard.writeText("nohup python3 ~/textexpander/client/expander.py > ~/.textexpander/expander.log 2>&1 &")}}>
                   {"nohup python3 ~/textexpander/client/expander.py > ~/.textexpander/expander.log 2>&1 &"}
                 </code>
               </div>
             </div>
           </div>
-          <div className="setup-apikey">
-            <span>Your API key (click to copy):</span>
-            <code className="setup-code" onClick={() => {navigator.clipboard.writeText(apiKey)}}>
-              {apiKey}
-            </code>
-          </div>
-          <p className="setup-note">Click any code block to copy it to your clipboard.</p>
+          <p className="setup-done">{"That's"} it! Try typing one of your snippet abbreviations anywhere to test it.</p>
+          <p className="setup-note">Tip: click any grey box to copy it to your clipboard.</p>
         </div>
       )}
 

@@ -22,8 +22,8 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-function renderExpansion(text) {
-  // Process bold, italic, and links into React elements
+function renderExpansion(text, keyPrefix = "") {
+  // Process bold, italic, and links into React elements (recursive for nesting)
   const TOKEN_RE = /(\*\*(.+?)\*\*|\[([^\]]+)\]\(([^)]+)\)|(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*))/g;
   const parts = [];
   let lastIndex = 0;
@@ -32,19 +32,20 @@ function renderExpansion(text) {
     if (match.index > lastIndex) {
       parts.push(text.slice(lastIndex, match.index));
     }
+    const key = keyPrefix + match.index;
     if (match[2] !== undefined) {
-      // Bold: **text**
-      parts.push(<strong key={match.index}>{match[2]}</strong>);
+      // Bold: **text** — recurse to handle links/italic inside
+      parts.push(<strong key={key}>{renderExpansion(match[2], key + "b")}</strong>);
     } else if (match[3] !== undefined) {
       // Link: [text](url)
       parts.push(
-        <a key={match.index} href={match[4]} target="_blank" rel="noopener noreferrer">
+        <a key={key} href={match[4]} target="_blank" rel="noopener noreferrer">
           {match[3]}
         </a>
       );
     } else if (match[5] !== undefined) {
-      // Italic: *text*
-      parts.push(<em key={match.index}>{match[5]}</em>);
+      // Italic: *text* — recurse to handle links inside
+      parts.push(<em key={key}>{renderExpansion(match[5], key + "i")}</em>);
     }
     lastIndex = TOKEN_RE.lastIndex;
   }

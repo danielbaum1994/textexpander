@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 
 const LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
+const BOLD_RE = /\*\*(.+?)\*\*/g;
+const ITALIC_RE = /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g;
+const HAS_FORMATTING_RE = /\*\*.+?\*\*|\*(?!\*).+?(?<!\*)\*(?!\*)|\[.+?\]\(.+?\)/;
 
 function getToken() {
   return localStorage.getItem("token");
@@ -20,20 +23,30 @@ function authHeaders() {
 }
 
 function renderExpansion(text) {
+  // Process bold, italic, and links into React elements
+  const TOKEN_RE = /(\*\*(.+?)\*\*|\[([^\]]+)\]\(([^)]+)\)|(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*))/g;
   const parts = [];
   let lastIndex = 0;
   let match;
-  const re = new RegExp(LINK_RE);
-  while ((match = re.exec(text)) !== null) {
+  while ((match = TOKEN_RE.exec(text)) !== null) {
     if (match.index > lastIndex) {
       parts.push(text.slice(lastIndex, match.index));
     }
-    parts.push(
-      <a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer">
-        {match[1]}
-      </a>
-    );
-    lastIndex = re.lastIndex;
+    if (match[2] !== undefined) {
+      // Bold: **text**
+      parts.push(<strong key={match.index}>{match[2]}</strong>);
+    } else if (match[3] !== undefined) {
+      // Link: [text](url)
+      parts.push(
+        <a key={match.index} href={match[4]} target="_blank" rel="noopener noreferrer">
+          {match[3]}
+        </a>
+      );
+    } else if (match[5] !== undefined) {
+      // Italic: *text*
+      parts.push(<em key={match.index}>{match[5]}</em>);
+    }
+    lastIndex = TOKEN_RE.lastIndex;
   }
   if (lastIndex < text.length) {
     parts.push(text.slice(lastIndex));
@@ -140,6 +153,42 @@ export default function App() {
     setExpansion("");
   };
 
+  // Wrap selected text (or insert at cursor) with markdown markers
+  const wrapSelection = (before, after) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = expansion.slice(start, end);
+    const wrapped = before + (selected || "text") + after;
+    const newExpansion = expansion.slice(0, start) + wrapped + expansion.slice(end);
+    setExpansion(newExpansion);
+    setTimeout(() => {
+      ta.focus();
+      if (selected) {
+        // Select the wrapped text
+        ta.setSelectionRange(start, start + wrapped.length);
+      } else {
+        // Select the placeholder "text" so user can type over it
+        ta.setSelectionRange(start + before.length, start + before.length + 4);
+      }
+    }, 0);
+  };
+
+  const handleBold = () => wrapSelection("**", "**");
+  const handleItalic = () => wrapSelection("*", "*");
+
+  const handleTextareaKeyDown = (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+      e.preventDefault();
+      handleBold();
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === "i") {
+      e.preventDefault();
+      handleItalic();
+    }
+  };
+
   const handleLinkClick = () => {
     const ta = textareaRef.current;
     if (!ta) return;
@@ -182,7 +231,7 @@ export default function App() {
     textareaRef.current?.focus();
   };
 
-  const hasLinks = LINK_RE.test(expansion);
+  const hasFormatting = HAS_FORMATTING_RE.test(expansion);
 
   return (
     <div className="container">
@@ -206,6 +255,7 @@ export default function App() {
           placeholder="Expansion text"
           value={expansion}
           onChange={(e) => setExpansion(e.target.value)}
+          onKeyDown={handleTextareaKeyDown}
           rows={3}
         />
         {showLinkInput && (
@@ -232,7 +282,7 @@ export default function App() {
             </div>
           </div>
         )}
-        {hasLinks && (
+        {hasFormatting && (
           <div className="preview">
             <span className="preview-label">Preview:</span>{" "}
             {renderExpansion(expansion)}
@@ -242,15 +292,30 @@ export default function App() {
           <button type="submit">{editingId ? "Update" : "Add"} Snippet</button>
           <button
             type="button"
-            className="link-btn"
+            className="format-btn"
+            onClick={handleBold}
+            title="Bold (⌘B)"
+          >
+            <strong>B</strong>
+          </button>
+          <button
+            type="button"
+            className="format-btn"
+            onClick={handleItalic}
+            title="Italic (⌘I)"
+          >
+            <em>I</em>
+          </button>
+          <button
+            type="button"
+            className="format-btn"
             onClick={handleLinkClick}
-            title="Insert hyperlink (select text first)"
+            title="Insert hyperlink (⌘K)"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6.5 8.5a3 3 0 0 0 4.2.4l2-2a3 3 0 0 0-4.2-4.2L7.3 3.9" />
               <path d="M9.5 7.5a3 3 0 0 0-4.2-.4l-2 2a3 3 0 0 0 4.2 4.2l1.2-1.2" />
             </svg>
-            Link
           </button>
           {editingId && (
             <button type="button" className="cancel" onClick={handleCancel}>

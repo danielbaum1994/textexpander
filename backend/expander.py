@@ -15,6 +15,9 @@ from pynput import keyboard
 SNIPPETS_PATH = Path.home() / ".textexpander" / "snippets.json"
 RESET_KEYS = {keyboard.Key.space, keyboard.Key.enter, keyboard.Key.tab}
 MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
+MARKDOWN_BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
+MARKDOWN_ITALIC_RE = re.compile(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)")
+FORMATTING_RE = re.compile(r"\*\*.+?\*\*|\*(?!\*).+?(?<!\*)\*(?!\*)|\[.+?\]\(.+?\)")
 
 
 def load_snippets() -> List[Dict]:
@@ -30,13 +33,15 @@ def save_snippets(snippets: List[Dict]) -> None:
     SNIPPETS_PATH.write_text(json.dumps(snippets, indent=2))
 
 
-def _has_links(text: str) -> bool:
-    return bool(MARKDOWN_LINK_RE.search(text))
+def _has_formatting(text: str) -> bool:
+    return bool(FORMATTING_RE.search(text))
 
 
 def _markdown_to_html(text: str) -> str:
-    """Convert markdown links to HTML, preserving newlines."""
+    """Convert markdown bold, italic, and links to HTML."""
     html = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    html = MARKDOWN_BOLD_RE.sub(r"<b>\1</b>", html)
+    html = MARKDOWN_ITALIC_RE.sub(r"<i>\1</i>", html)
     html = MARKDOWN_LINK_RE.sub(r'<a href="\2">\1</a>', html)
     html = html.replace("\n", "<br>")
     return html
@@ -65,7 +70,9 @@ pb's setString:thePlain forType:(current application's NSPasteboardTypeString)
 
 
 def _get_plain_text(text: str) -> str:
-    """Strip markdown links to plain text: [text](url) -> text"""
+    """Strip markdown formatting to plain text."""
+    text = MARKDOWN_BOLD_RE.sub(r"\1", text)
+    text = MARKDOWN_ITALIC_RE.sub(r"\1", text)
     return MARKDOWN_LINK_RE.sub(r"\1", text)
 
 
@@ -139,7 +146,7 @@ class Expander:
 
         time.sleep(0.05)
 
-        if _has_links(expansion):
+        if _has_formatting(expansion):
             # Rich text path: set clipboard and paste
             html = _markdown_to_html(expansion)
             plain = _get_plain_text(expansion)

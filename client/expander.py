@@ -27,6 +27,9 @@ SERVER_URL = os.environ.get("TEXTEXPANDER_URL", "https://your-app.up.railway.app
 
 RESET_KEYS = {keyboard.Key.space, keyboard.Key.enter, keyboard.Key.tab}
 MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
+MARKDOWN_BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
+MARKDOWN_ITALIC_RE = re.compile(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)")
+FORMATTING_RE = re.compile(r"\*\*.+?\*\*|\*(?!\*).+?(?<!\*)\*(?!\*)|\[.+?\]\(.+?\)")
 
 
 # --- Config management ---
@@ -76,12 +79,14 @@ def sync_snippets(api_key: str) -> list[dict] | None:
 
 # --- Rich text helpers (macOS) ---
 
-def _has_links(text: str) -> bool:
-    return bool(MARKDOWN_LINK_RE.search(text))
+def _has_formatting(text: str) -> bool:
+    return bool(FORMATTING_RE.search(text))
 
 
 def _markdown_to_html(text: str) -> str:
     html = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    html = MARKDOWN_BOLD_RE.sub(r"<b>\1</b>", html)
+    html = MARKDOWN_ITALIC_RE.sub(r"<i>\1</i>", html)
     html = MARKDOWN_LINK_RE.sub(r'<a href="\2">\1</a>', html)
     html = html.replace("\n", "<br>")
     return html
@@ -108,6 +113,8 @@ pb's setString:thePlain forType:(current application's NSPasteboardTypeString)
 
 
 def _get_plain_text(text: str) -> str:
+    text = MARKDOWN_BOLD_RE.sub(r"\1", text)
+    text = MARKDOWN_ITALIC_RE.sub(r"\1", text)
     return MARKDOWN_LINK_RE.sub(r"\1", text)
 
 
@@ -173,7 +180,7 @@ class Expander:
 
         time.sleep(0.05)
 
-        if _has_links(expansion):
+        if _has_formatting(expansion):
             html = _markdown_to_html(expansion)
             plain = _get_plain_text(expansion)
             _set_clipboard_rich(html, plain)

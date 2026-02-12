@@ -10,13 +10,22 @@ from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./textexpander.db")
 
-# Railway may provide various URL formats; SQLAlchemy needs postgresql://
+# Log the raw URL scheme for debugging (not the full URL to avoid leaking creds)
+print(f"[database] Raw DATABASE_URL starts with: {DATABASE_URL[:20]}...")
+
+# Normalize to a valid SQLAlchemy URL
+DATABASE_URL = DATABASE_URL.strip()
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-elif DATABASE_URL.startswith("https://"):
-    DATABASE_URL = DATABASE_URL.replace("https://", "postgresql://", 1)
-elif DATABASE_URL.startswith("http://"):
-    DATABASE_URL = DATABASE_URL.replace("http://", "postgresql://", 1)
+elif not DATABASE_URL.startswith(("postgresql://", "sqlite://")):
+    # Unknown scheme — try forcing postgresql://
+    from urllib.parse import urlparse
+    parsed = urlparse(DATABASE_URL)
+    DATABASE_URL = f"postgresql://{parsed.netloc}{parsed.path}"
+    if parsed.query:
+        DATABASE_URL += f"?{parsed.query}"
+
+print(f"[database] Final DATABASE_URL starts with: {DATABASE_URL[:25]}...")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)

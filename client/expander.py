@@ -159,6 +159,9 @@ class Expander:
 
     def _on_press(self, key) -> None:
         if key in RESET_KEYS:
+            # Check for expansion before clearing — trigger on space/enter/tab
+            if self._buffer and self._check_expansion(triggered_by_reset=True):
+                return
             self._buffer = ""
             return
 
@@ -177,17 +180,24 @@ class Expander:
         self._buffer += char
         self._check_expansion()
 
-    def _check_expansion(self) -> None:
+    def _check_expansion(self, triggered_by_reset=False) -> bool:
         with self._lock:
             snippets = list(self._snippets)
 
         for snippet in snippets:
             abbr = snippet["abbreviation"]
             if self._buffer.endswith(abbr):
-                self._expand(abbr, snippet["expansion"])
-                break
+                self._expand(abbr, snippet["expansion"], delete_trailing=triggered_by_reset)
+                return True
+        return False
 
-    def _expand(self, abbreviation: str, expansion: str) -> None:
+    def _expand(self, abbreviation: str, expansion: str, delete_trailing: bool = False) -> None:
+        # Delete the trailing space/enter/tab that triggered the expansion
+        if delete_trailing:
+            self._controller.press(keyboard.Key.backspace)
+            self._controller.release(keyboard.Key.backspace)
+            time.sleep(0.02)
+
         for _ in range(len(abbreviation)):
             self._controller.press(keyboard.Key.backspace)
             self._controller.release(keyboard.Key.backspace)

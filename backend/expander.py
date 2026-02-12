@@ -106,17 +106,16 @@ class Expander:
             self._listener = None
 
     def _on_press(self, key) -> None:
-        # Reset buffer on space/enter/tab
         if key in RESET_KEYS:
+            if self._buffer and self._check_expansion(triggered_by_reset=True):
+                return
             self._buffer = ""
             return
 
-        # Handle backspace
         if key == keyboard.Key.backspace:
             self._buffer = self._buffer[:-1]
             return
 
-        # Only care about character keys
         try:
             char = key.char
         except AttributeError:
@@ -128,17 +127,21 @@ class Expander:
         self._buffer += char
         self._check_expansion()
 
-    def _check_expansion(self) -> None:
+    def _check_expansion(self, triggered_by_reset=False) -> bool:
         snippets = load_snippets()
         for snippet in snippets:
             abbr = snippet["abbreviation"]
             if self._buffer.endswith(abbr):
-                expansion = snippet["expansion"]
-                self._expand(abbr, expansion)
-                break
+                self._expand(abbr, snippet["expansion"], delete_trailing=triggered_by_reset)
+                return True
+        return False
 
-    def _expand(self, abbreviation: str, expansion: str) -> None:
-        # Delete the abbreviation by sending backspaces
+    def _expand(self, abbreviation: str, expansion: str, delete_trailing: bool = False) -> None:
+        if delete_trailing:
+            self._controller.press(keyboard.Key.backspace)
+            self._controller.release(keyboard.Key.backspace)
+            time.sleep(0.02)
+
         for _ in range(len(abbreviation)):
             self._controller.press(keyboard.Key.backspace)
             self._controller.release(keyboard.Key.backspace)

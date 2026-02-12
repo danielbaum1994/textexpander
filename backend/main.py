@@ -24,6 +24,17 @@ import os
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
 
+# Default snippets seeded into every new account
+DEFAULT_SNIPPETS = [
+    {"abbreviation": "zsig", "expansion": "Thanks,\nDaniel"},
+    {"abbreviation": "zzc", "expansion": "[ZeroClick](https://www.zeroclick.ai/)"},
+    {"abbreviation": "zcal", "expansion": "Here's my [calendar](cal.com/baumzc )."},
+    {"abbreviation": "zdocs", "expansion": "**[Technical Docs](https://developer.zeroclick.ai/docs)**"},
+    {"abbreviation": "zsupplyblurb", "expansion": "**[ZeroClick](https://zeroclick.ai/) helps AI tools monetize with ads**. The ads are dynamically generated from user prompts. Customers like Blackbox earn 8 figures annually with our ads MCP. Integrate in a single day and start driving revenue. "},
+    {"abbreviation": "zdemandblurb", "expansion": "**[ZeroClick](https://www.zeroclick.ai/) helps brands advertise in AI**. MongoDB, Supabase, and Mermaid use ZeroClick to show ads to >30m developers as they code. We'll cover your ad spend for 1 month to see if AI ads are right for you. "},
+    {"abbreviation": "zclaude", "expansion": "cd ~/zeroclick-gtm"},
+]
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -86,6 +97,15 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
             api_key=secrets.token_urlsafe(32),
         )
         db.add(user)
+        db.flush()
+        # Seed default snippets for new users
+        for s in DEFAULT_SNIPPETS:
+            db.add(Snippet(
+                id=str(uuid.uuid4()),
+                user_id=user.id,
+                abbreviation=s["abbreviation"],
+                expansion=s["expansion"],
+            ))
         db.commit()
         db.refresh(user)
     else:

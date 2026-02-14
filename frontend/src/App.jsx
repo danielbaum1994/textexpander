@@ -480,9 +480,10 @@ export default function App() {
             </tr>
           )}
           {(() => {
-            const desktop = snippets.filter((s) => s.abbreviation.startsWith("z"));
-            const mobile = snippets.filter((s) => s.abbreviation.startsWith("m"));
-            const other = snippets.filter((s) => !s.abbreviation.startsWith("z") && !s.abbreviation.startsWith("m"));
+            const sort = (arr) => [...arr].sort((a, b) => a.abbreviation.localeCompare(b.abbreviation));
+            const desktop = sort(snippets.filter((s) => s.abbreviation.startsWith("z")));
+            const mobile = sort(snippets.filter((s) => s.abbreviation.startsWith("m")));
+            const other = sort(snippets.filter((s) => !s.abbreviation.startsWith("z") && !s.abbreviation.startsWith("m")));
             const sections = [];
             if (desktop.length > 0) sections.push({ label: "Desktop (z-)", items: desktop });
             if (mobile.length > 0) sections.push({ label: "Mobile (m-)", items: mobile });

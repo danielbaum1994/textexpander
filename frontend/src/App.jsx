@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
 const BOLD_RE = /\*\*(.+?)\*\*/g;
@@ -479,18 +479,36 @@ export default function App() {
               </td>
             </tr>
           )}
-          {snippets.map((s) => (
-            <tr key={s.id}>
-              <td className="abbr">{s.abbreviation}</td>
-              <td className="expansion">{renderExpansion(s.expansion)}</td>
-              <td className="actions">
-                <button onClick={() => handleEdit(s)}>Edit</button>
-                <button className="delete" onClick={() => handleDelete(s.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
+          {(() => {
+            const desktop = snippets.filter((s) => s.abbreviation.startsWith("z"));
+            const mobile = snippets.filter((s) => s.abbreviation.startsWith("m"));
+            const other = snippets.filter((s) => !s.abbreviation.startsWith("z") && !s.abbreviation.startsWith("m"));
+            const sections = [];
+            if (desktop.length > 0) sections.push({ label: "Desktop (z-)", items: desktop });
+            if (mobile.length > 0) sections.push({ label: "Mobile (m-)", items: mobile });
+            if (other.length > 0) sections.push({ label: "Other", items: other });
+            return sections.map((section, si) => (
+              <React.Fragment key={section.label}>
+                {sections.length > 1 && (
+                  <tr className="section-header">
+                    <td colSpan={3}>{section.label}</td>
+                  </tr>
+                )}
+                {section.items.map((s) => (
+                  <tr key={s.id}>
+                    <td className="abbr">{s.abbreviation}</td>
+                    <td className="expansion">{renderExpansion(s.expansion)}</td>
+                    <td className="actions">
+                      <button onClick={() => handleEdit(s)}>Edit</button>
+                      <button className="delete" onClick={() => handleDelete(s.id)}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </React.Fragment>
+            ));
+          })()}
         </tbody>
       </table>
     </div>

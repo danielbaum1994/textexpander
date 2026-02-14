@@ -453,6 +453,16 @@ td.actions {
   gap: 6px;
 }
 
+tr.section-header td {
+  background: #f5f5f7;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #86868b;
+  padding: 8px 16px;
+  border-top: 2px solid #e0e0e0;
+}
+
 td.empty {
   text-align: center;
   color: #86868b;

@@ -82,6 +82,7 @@ export default function App() {
   const [paused, setPaused] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [showSetup, setShowSetup] = useState(false);
+  const [showSync, setShowSync] = useState(false);
   const [abbr, setAbbr] = useState("");
   const [expansion, setExpansion] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -266,11 +267,48 @@ export default function App() {
             <span className="toggle-slider" />
             <span className="toggle-label">{paused ? "Off" : "On"}</span>
           </label>
-          <button className="setup-btn" onClick={() => setShowSetup(!showSetup)}>Setup</button>
+          <button className="setup-btn" onClick={() => { setShowSync(!showSync); setShowSetup(false); }}>Sync to iOS</button>
+          <button className="setup-btn" onClick={() => { setShowSetup(!showSetup); setShowSync(false); }}>Setup</button>
           <span className="user-name">{user?.name}</span>
           <button className="sign-out" onClick={handleSignOut}>Sign out</button>
         </div>
       </header>
+
+      {showSync && (
+        <div className="setup-panel">
+          <h2>Sync Snippets to iPhone</h2>
+          <p>Use the macOS built-in text replacement system (syncs to iOS/iPad via iCloud). Your snippets will work in any app on all your Apple devices.</p>
+          <div className="setup-steps">
+            <div className="setup-step">
+              <span className="step-num">1</span>
+              <div className="step-content">
+                <p><strong>Run the sync script</strong> — open Terminal and paste this command:</p>
+                <code className="setup-code" onClick={(e) => {navigator.clipboard.writeText(e.currentTarget.textContent)}}>
+                  {"python3 ~/textexpander/client/sync_macos.py"}
+                </code>
+                <p>Sign in when prompted (same as the desktop setup). Your snippets will be added to System Settings {">"} Keyboard {">"} Text Replacements.</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">2</span>
+              <div className="step-content">
+                <p><strong>Set up automatic syncing</strong> — run this once to sync every 12 hours automatically:</p>
+                <code className="setup-code" onClick={(e) => {navigator.clipboard.writeText(e.currentTarget.textContent)}}>
+                  {"python3 ~/textexpander/client/sync_macos.py --install-schedule"}
+                </code>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">3</span>
+              <div className="step-content">
+                <p><strong>Manual sync</strong> — run the command from Step 1 anytime you want an immediate sync after adding or removing snippets.</p>
+              </div>
+            </div>
+          </div>
+          <p className="setup-done">Once synced, your snippets will appear on your iPhone, iPad, and Mac in any app that supports text replacements.</p>
+          <p className="setup-note">Tip: click any grey box to copy it to your clipboard. Only snippets with z-prefixed abbreviations are synced.</p>
+        </div>
+      )}
 
       {showSetup && (
         <div className="setup-panel">

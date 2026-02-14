@@ -267,7 +267,7 @@ export default function App() {
             <span className="toggle-slider" />
             <span className="toggle-label">{paused ? "Off" : "On"}</span>
           </label>
-          <button className="setup-btn" onClick={() => { setShowSync(!showSync); setShowSetup(false); }}>Sync to iOS</button>
+          <button className="setup-btn" onClick={() => { setShowSync(!showSync); setShowSetup(false); }}>Sync to iPhone</button>
           <button className="setup-btn" onClick={() => { setShowSetup(!showSetup); setShowSync(false); }}>Setup</button>
           <span className="user-name">{user?.name}</span>
           <button className="sign-out" onClick={handleSignOut}>Sign out</button>
@@ -292,7 +292,7 @@ export default function App() {
             <div className="setup-step">
               <span className="step-num">2</span>
               <div className="step-content">
-                <p><strong>Set up automatic syncing</strong> — run this once to sync every 12 hours automatically:</p>
+                <p><strong>Set up automatic syncing</strong> — paste this once and it will automatically sync your snippets every 12 hours in the background:</p>
                 <code className="setup-code" onClick={(e) => {navigator.clipboard.writeText(e.currentTarget.textContent)}}>
                   {"python3 ~/textexpander/client/sync_macos.py --install-schedule"}
                 </code>

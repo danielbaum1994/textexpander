@@ -277,7 +277,7 @@ export default function App() {
       {showSync && (
         <div className="setup-panel">
           <h2>Sync Snippets to iPhone</h2>
-          <p>Use the macOS built-in text replacement system (syncs to iOS/iPad via iCloud). Your snippets will work in any app on all your Apple devices.</p>
+          <p>Use the macOS built-in text replacement system (syncs to iOS/iPad via iCloud). Only snippets with <strong>m-prefixed</strong> abbreviations (e.g. <code>msig</code>, <code>mblurb</code>) are synced to your phone. Note: hyperlinks, bold, and other formatting are not supported — mobile snippets are plain text only.</p>
           <div className="setup-steps">
             <div className="setup-step">
               <span className="step-num">1</span>
@@ -306,7 +306,7 @@ export default function App() {
             </div>
           </div>
           <p className="setup-done">Once synced, your snippets will appear on your iPhone, iPad, and Mac in any app that supports text replacements.</p>
-          <p className="setup-note">Tip: click any grey box to copy it to your clipboard. Only snippets with z-prefixed abbreviations are synced.</p>
+          <p className="setup-note">Tip: click any grey box to copy it to your clipboard.</p>
         </div>
       )}
 

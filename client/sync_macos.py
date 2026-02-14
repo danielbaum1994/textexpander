@@ -77,7 +77,7 @@ def read_macos_replacements(conn: sqlite3.Connection) -> dict[str, dict]:
     """
     cursor = conn.execute(
         "SELECT Z_PK, ZSHORTCUT, ZPHRASE, ZWASDELETED FROM ZTEXTREPLACEMENTENTRY "
-        "WHERE ZSHORTCUT LIKE 'z%'"
+        "WHERE ZSHORTCUT LIKE 'm%'"
     )
     entries = {}
     for pk, shortcut, phrase, was_deleted in cursor:
@@ -143,8 +143,8 @@ def sync(api_key: str) -> None:
         existing = read_macos_replacements(conn)
         next_pk = get_next_pk(conn)
 
-        # Build lookup from API snippets
-        api_snippets = {s["abbreviation"]: s["expansion"] for s in snippets}
+        # Build lookup from API snippets (only m-prefixed abbreviations)
+        api_snippets = {s["abbreviation"]: s["expansion"] for s in snippets if s["abbreviation"].startswith("m")}
 
         added = 0
         updated = 0

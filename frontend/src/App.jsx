@@ -377,6 +377,21 @@ export default function App() {
             </div>
           </div>
           <p className="setup-done">{"That's"} it! Try typing one of your snippet abbreviations anywhere to test it.</p>
+          <h3 className="troubleshooting-heading">Troubleshooting</h3>
+          <div className="setup-steps">
+            <div className="setup-step">
+              <span className="step-num">8</span>
+              <div className="step-content">
+                <p><strong>Snippets stopped expanding?</strong> — macOS occasionally revokes keyboard access after a system update. Open <strong>System Settings</strong> {">"} <strong>Privacy & Security</strong> {">"} <strong>Accessibility</strong> and check that Python has its toggle <strong>on</strong>. Then run the command from Step 7 again to restart Snippy.</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">9</span>
+              <div className="step-content">
+                <p><strong>Still not working?</strong> — The macOS update may have changed the Python binary entirely, so the old entry {"won't"} work. Remove any existing Python entry from Accessibility, then repeat Steps 5 and 6 to re-add it and restart.</p>
+              </div>
+            </div>
+          </div>
           <p className="setup-note">Tip: click any grey box to copy it to your clipboard.</p>
         </div>
       )}
